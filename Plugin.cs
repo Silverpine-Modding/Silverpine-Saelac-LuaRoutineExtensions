@@ -2,6 +2,7 @@
 
 using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 using Lua;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ public sealed class Plugin : BaseUnityPlugin
     public const string PluginGuid =
         "renegadex.silverpine.luaroutineextensions";
     public const string PluginName = "Lua Routine Extensions";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     private static readonly FieldInfo? LuaAccessibleFunctionsField =
         typeof(LuaEntity).GetField(
@@ -65,35 +66,49 @@ public sealed class Plugin : BaseUnityPlugin
         Logger.LogInfo(
             $"Registered {registered} custom-character Lua routine " +
             "functions.");
+
+        // Silverpine destroys bootstrap plugin hosts. These documentation
+        // patches, like the registered functions, must remain for the process.
+        try
+        {
+            Harmony.CreateAndPatchAll(typeof(Plugin).Assembly, PluginGuid);
+            Logger.LogInfo(
+                "Enhanced routine-generation documentation and corrected " +
+                "the base-game daily-variety prompt example.");
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(
+                "Could not install all routine documentation patches. " +
+                "Registered Lua functions remain available. " + exception);
+        }
     }
 
     private static IEnumerable<LuaAccessibleFunction> CreateFunctions()
     {
-        string eventNames = string.Join(
-            ", ", Enum.GetNames(typeof(CurrentEvent)));
+        string eventNames = "eventName is a quoted, case-insensitive string: " +
+            string.Join(", ", Enum.GetNames(typeof(CurrentEvent))) + ".";
 
         yield return new LuaAccessibleFunction(
             "Events",
             new LuaFunction("IsActive", IsEventActive),
             "IsActive(eventName)",
-            "eventName is one of: " + eventNames + ".",
-            "True when that base-game schedule event is active today. " +
-            "Returns false for an invalid name or unavailable game state.");
+            eventNames,
+            RoutineDocumentation.EventActivity);
 
         yield return new LuaAccessibleFunction(
             "Events",
             new LuaFunction("GetDaysUntil", GetDaysUntilEvent),
             "GetDaysUntil(eventName)",
-            "eventName is one of: " + eventNames + ".",
-            "The number of days until that base-game schedule event, " +
-            "or -1 for an invalid name or unavailable game state.");
+            eventNames,
+            RoutineDocumentation.EventDays);
 
         yield return new LuaAccessibleFunction(
             "NPC",
             new LuaFunction("IsVendorActive", IsVendorActive),
             "IsVendorActive(npcName)",
-            "npcName is a loaded base or custom NPC's name.",
-            "True when the NPC has an active Vendor component.");
+            RoutineDocumentation.NpcNameInput,
+            RoutineDocumentation.VendorActivity);
 
         yield return new LuaAccessibleFunction(
             "NPC",
@@ -101,26 +116,24 @@ public sealed class Plugin : BaseUnityPlugin
                 "IsBaseRoutineActivity",
                 IsBaseRoutineActivity),
             "IsBaseRoutineActivity(npcName, activity)",
-            "npcName is a loaded base or custom NPC's name. activity is " +
-            "the exact internal activity text to compare.",
-            "True when the NPC's underlying non-override routine has the " +
-            "specified activity.");
+            RoutineDocumentation.NpcNameInput + " activity is a quoted, " +
+            "case-sensitive internal activity string supplied by the author.",
+            RoutineDocumentation.BaseRoutineActivity);
 
         yield return new LuaAccessibleFunction(
             "NPC",
             new LuaFunction("HasGivenKeys", HasGivenKeys),
             "HasGivenKeys(npcName)",
-            "npcName is a loaded base or custom NPC's name.",
-            "True when that NPC has given their keys to the player.");
+            RoutineDocumentation.NpcNameInput,
+            RoutineDocumentation.GivenKeys);
 
         yield return new LuaAccessibleFunction(
             "NPC",
             new LuaFunction("IsWithinDistance", IsWithinDistance),
             "IsWithinDistance(firstNpcName, secondNpcName, maximumDistance)",
-            "The first two inputs are loaded base or custom NPC names. " +
-            "maximumDistance is a non-negative number of world tiles.",
-            "True when the NPCs' Euclidean tile distance is less than or " +
-            "equal to maximumDistance.");
+            "The first two inputs follow npcName rules above. " +
+            "maximumDistance is a finite, non-negative number of world tiles.",
+            RoutineDocumentation.WithinDistance);
     }
 
     private static bool ContainsFunction(
