@@ -1,6 +1,6 @@
 # Lua Routine Extensions
 
-**Version 1.1.0 — Silverpine 1.7.3**
+**Version 1.1.1 — Silverpine 1.7.3**
 
 Adds six read-only schedule/NPC checks to custom-character Lua, with documentation
 designed to help the game's LLM generate valid, sensible routines. Both the Lua
@@ -172,6 +172,11 @@ If Hayden is closed, unavailable, or the extension is absent, execution continue
 to the example's work/leisure fallback. `day` comes from `World.GetCurrentDay()`.
 
 ## Changelog
+
+### 1.1.1
+
+- Added a silent weekday-name compatibility fallback. The creator-facing Lua
+  catalog and AI routine documentation still expose only the standard command.
 
 ### 1.1.0
 

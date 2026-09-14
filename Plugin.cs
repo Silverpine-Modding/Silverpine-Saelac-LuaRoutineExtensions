@@ -19,7 +19,7 @@ public sealed class Plugin : BaseUnityPlugin
     public const string PluginGuid =
         "renegadex.silverpine.luaroutineextensions";
     public const string PluginName = "Lua Routine Extensions";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.1.1";
 
     private static readonly FieldInfo? LuaAccessibleFunctionsField =
         typeof(LuaEntity).GetField(
@@ -67,19 +67,20 @@ public sealed class Plugin : BaseUnityPlugin
             $"Registered {registered} custom-character Lua routine " +
             "functions.");
 
-        // Silverpine destroys bootstrap plugin hosts. These documentation
-        // patches, like the registered functions, must remain for the process.
+        // Silverpine destroys bootstrap plugin hosts. These compatibility and
+        // documentation patches must remain for the process.
         try
         {
             Harmony.CreateAndPatchAll(typeof(Plugin).Assembly, PluginGuid);
             Logger.LogInfo(
-                "Enhanced routine-generation documentation and corrected " +
+                "Installed Lua compatibility support, enhanced " +
+                "routine-generation documentation and corrected " +
                 "the base-game daily-variety prompt example.");
         }
         catch (Exception exception)
         {
             Logger.LogError(
-                "Could not install all routine documentation patches. " +
+                "Could not install all Lua compatibility/documentation patches. " +
                 "Registered Lua functions remain available. " + exception);
         }
     }
